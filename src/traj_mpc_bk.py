@@ -31,22 +31,17 @@ N = 10 # Number of steps in the interval
 vel_max = 15 # Set the maximum velocity
 vel_min = 0.1 # Set the minimum velocity
 max_steer = 0.4189 # Set the maximum steering angle
-max_accln = 10
 
- # Time interval
-time = 20 # Time to complete the raceline
-future_time = 0.5 # Future Look Ahead time
-dt = future_time/N
-# dt = 1
+dt = 0.05 # Time interval
+time = 100 # Trial time
 
-qx = float(sys.argv[2]) # State error scale for x_pos
-qy = float(sys.argv[3]) # State error scale for y_pos
-q_yaw = float(sys.argv[4]) # State error scale for yaw
-q_vel = float(sys.argv[5]) # State error scale for velocity
-r_acc = float(sys.argv[6]) # Input cost of accln
-r_steer = float(sys.argv[7]) # Input cost of steer
-u_steer = float(sys.argv[9]) # Steering constraints
-u_acc = float(sys.argv[8]) # Accln constraints
+# q_d1 = float(sys.argv[2])
+# q_d2 = float(sys.argv[3])
+# r_d = float(sys.argv[4])
+qx = float(sys.argv[2])
+qy = float(sys.argv[3])
+q_yaw = float(sys.argv[4])
+q_vel = float(sys.argv[5])
 
 class ros_message_listener:
     def __init__(self):
@@ -59,7 +54,7 @@ class ros_message_listener:
     def odom_callback(self, msg):
         x = msg.pose.pose.position.x
         y = msg.pose.pose.position.y
-        vel = math.sqrt(msg.twist.twist.linear.x**2 + msg.twist.twist.linear.y**2)
+        vel = msg.twist.twist.linear.x
         qx = msg.pose.pose.orientation.x
         qy = msg.pose.pose.orientation.y
         qz = msg.pose.pose.orientation.z
@@ -84,8 +79,8 @@ def nonlinear_kinematic_mpc_solver(x_ref, x_0, N):
     x_ref = casadi.MX(x_ref)
     x_0 = casadi.MX(x_0)
 
-    Q = casadi.diag([qx, qy, q_yaw, q_vel])
-    R = casadi.diag([r_acc, r_steer])
+    Q = casadi.diag([q_d1, q_d1, q_d2, q_d2])
+    R = casadi.diag([r_d, r_d])
     cost = 0
 
     for t in range(N-1):
@@ -98,22 +93,16 @@ def nonlinear_kinematic_mpc_solver(x_ref, x_0, N):
         opti.subject_to(x[3, t + 1] == x[3, t] + u[0, t]*dt)
 
         if t < N-2:
-            opti.subject_to(u[1, t+1] - u[1, t] >= -u_steer)
-            opti.subject_to(u[1, t+1] - u[1, t] <= u_steer)
-            opti.subject_to(u[0, t+1] - u[0, t] <= u_acc)
-            opti.subject_to(u[0, t+1] - u[0, t] >= -u_acc)
-
-        # if t < N-2:
-        #     opti.subject_to(u[1, t+1] - u[1, t] >= -0.06)
-        #     opti.subject_to(u[1, t+1] - u[1, t] <= 0.06)
-        #     opti.subject_to(u[0, t+1] - u[0, t] <= 0.1)
-        #     opti.subject_to(u[0, t+1] - u[0, t] >= -0.1)
+            opti.subject_to(u[1, t+1] - u[1, t] >= -0.06)
+            opti.subject_to(u[1, t+1] - u[1, t] <= 0.06)
+            opti.subject_to(u[0, t+1] - u[0, t] <= 0.1)
+            opti.subject_to(u[0, t+1] - u[0, t] >= -0.1)
 
     opti.subject_to(x[:, 0] == x_0)
     opti.subject_to(u[1, :] <= max_steer)
     opti.subject_to(u[1, :] >= -max_steer)
-    opti.subject_to(u[0, :] <= max_accln)
-    opti.subject_to(u[0, :] >= -max_accln)
+    opti.subject_to(u[0, :] <= 1)
+    opti.subject_to(u[0, :] >= -1)
 
     opti.minimize(cost)
     opti.solver('ipopt',{"print_time": False}, {"print_level": 0})#, {"acceptable_tol": 0.0001}
@@ -124,7 +113,23 @@ def nonlinear_kinematic_mpc_solver(x_ref, x_0, N):
 
     return acceleration, steering
 
-
+# def reference_pose_selection(global_path, reference_pose_id, distance_interval, N, num_path):
+#     distance = 0.0
+#     i = reference_pose_id + 1
+#     reference_pose = np.zeros((N, 4))
+#     for k in range(N):
+#         while distance < distance_interval:
+#             if i < num_path:
+#                 distance = ((global_path[i,0] - global_path[reference_pose_id,0])**2 + (global_path[i,1] - global_path[reference_pose_id,1])**2)**0.5
+#                 i += 1
+#             else:
+#                 i -= num_path
+#                 distance = ((global_path[i,0] - global_path[reference_pose_id,0])**2 + (global_path[i,1] - global_path[reference_pose_id,1])**2)**0.5
+#                 i += 1
+#         reference_pose[k, :] = np.array([global_path[i,0], global_path[i,1], global_path[i,2], global_path[i,3]])
+#         reference_pose_id = i
+#         distance = 0.0
+#     return reference_pose
 
 def rviz_markers(pose,idx):
     if idx == 0:
@@ -167,7 +172,7 @@ def rviz_markers(pose,idx):
 
 
 def reference_pose_selection(x_spline,y_spline, curr_t,N):
-    delta_t = future_time
+    delta_t = 1
     if curr_t+delta_t > time:
         curr_t = 0
     
@@ -216,6 +221,8 @@ if __name__ == "__main__":
 
     global_path,x_spline,y_spline = path_gen.get_spline_path(csv_f,time)
 
+    num_path = len(global_path[:,0])
+    
     rate = rospy.Rate(100)
     vehicle_pose_msg = ros_message_listener()
     # N = 5
@@ -228,23 +235,19 @@ if __name__ == "__main__":
             
             reference_pose = reference_pose_selection(x_spline,y_spline, curr_t, N)
             # Transform the reference pose to vehicle coordinate
-            # if curr_t > future_time:
-            if True:
-                x_ref = np.zeros((N, 4))
-                for i in range(N):
-                    x, ref = vehicle_coordinate_transformation(reference_pose[i,:], current_state)
-                    x_ref[i, :] = ref
-                
-                # Compute Control Output from Nonlinear Model Predictive Control
-                acceleration, steering = nonlinear_kinematic_mpc_solver(x_ref.T, x.T, N)
-                
-                speed = np.clip(current_state[3] + acceleration*dt, vel_min, vel_max)
-                # speed = current_state[3]+acceleration*dt
-                print(current_state[3],speed)
-                drive_msg = AckermannDrive()
-                drive_msg.speed = speed
-                drive_msg.steering_angle = steering
-                drive_pub.publish(drive_msg)
+            x_ref = np.zeros((N, 4))
+            for i in range(N):
+                x, ref = vehicle_coordinate_transformation(reference_pose[i,:], current_state)
+                x_ref[i, :] = ref
+            
+            # Compute Control Output from Nonlinear Model Predictive Control
+            acceleration, steering = nonlinear_kinematic_mpc_solver(x_ref.T, x.T, N)
+            speed = np.clip(current_state[3] + acceleration, vel_min, vel_max)
+            
+            drive_msg = AckermannDrive()
+            drive_msg.speed = speed + 1.0
+            drive_msg.steering_angle = steering
+            drive_pub.publish(drive_msg)
             raceline_pub.publish(rviz_markers(global_path,0))
             spline_marker_pub.publish(rviz_markers(reference_pose,1))
         except IndexError:
