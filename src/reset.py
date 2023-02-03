@@ -29,7 +29,7 @@ try:
     while not rospy.is_shutdown():
         state_msg = ModelState()
         state_msg.model_name = 'car_1'
-        state_msg.pose.position.x =  0
+        state_msg.pose.position.x =  12
         state_msg.pose.position.y = 0
         state_msg.pose.position.z =  0
 

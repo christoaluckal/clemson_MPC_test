@@ -34,8 +34,8 @@ max_steer = 0.4189 # Set the maximum steering angle
 max_accln = 10
 
  # Time interval
-time = 20 # Time to complete the raceline
-future_time = 0.5 # Future Look Ahead time
+time = 80 # Time to complete the raceline
+future_time = 1 # Future Look Ahead time
 dt = future_time/N
 # dt = 1
 
@@ -134,8 +134,8 @@ def rviz_markers(pose,idx):
         points.ns = "raceline"
         points.action = Marker.ADD
         points.pose.orientation.w = 1
-        points.scale.x = 0.05
-        points.scale.y = 0.05
+        points.scale.x = 0.5
+        points.scale.y = 0.5
         points.color.r = 1
         points.color.a = 1
 
@@ -152,8 +152,8 @@ def rviz_markers(pose,idx):
         points.ns = "spline"
         points.action = Marker.ADD
         points.pose.orientation.w = 1
-        points.scale.x = 0.1
-        points.scale.y = 0.1
+        points.scale.x = 1
+        points.scale.y = 1
         points.color.b = 1
         points.color.a = 1
 
