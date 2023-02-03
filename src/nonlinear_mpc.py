@@ -22,16 +22,18 @@ import csv
 import os
 import path_gen
 import sys
+import matplotlib.pyplot as plt
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle
 N_x = 4 # Number of state for MPC design
 N_u = 2 # Number of control for MPC design
-N = 10 # Number of steps in the interval
 vel_max = 15 # Set the maximum velocity
 vel_min = 0.1 # Set the minimum velocity
 max_steer = 0.4189 # Set the maximum steering angle
 max_accln = 10
+
+N = 10 # Number of steps in the interval
 
  # Time interval
 time = 80 # Time to complete the raceline
@@ -54,6 +56,8 @@ class ros_message_listener:
         self.y = 0.0
         self.yaw = 0.0
         self.vel = 0.0
+        self.x_vel = 0
+        self.y_vel = 0
         self.odom_sub = rospy.Subscriber('/car_1/base/odom', Odometry, self.odom_callback)
 
     def odom_callback(self, msg):
@@ -70,10 +74,12 @@ class ros_message_listener:
         self.x = x
         self.y = y
         self.vel = vel
+        self.x_vel = msg.twist.twist.linear.x
+        self.y_vel = msg.twist.twist.linear.y
         self.yaw = yaw
 
     def vehicle_state_output(self):
-        vehicle_state = np.array([self.x, self.y, self.yaw, self.vel])
+        vehicle_state = np.array([self.x, self.y, self.yaw, self.vel,self.x_vel,self.y_vel])
         return vehicle_state
 
 def nonlinear_kinematic_mpc_solver(x_ref, x_0, N):
@@ -168,8 +174,12 @@ def rviz_markers(pose,idx):
 
 def reference_pose_selection(x_spline,y_spline, curr_t,N):
     delta_t = future_time
-    if curr_t+delta_t > time:
+    while curr_t+delta_t > time:
+        delta_t-=dt
+
+    if delta_t<0.01:
         curr_t = 0
+        delta_t = future_time
     
     t_vec = np.linspace(curr_t,curr_t+delta_t,N)
     xTraj = x_spline(t_vec)
@@ -220,10 +230,23 @@ if __name__ == "__main__":
     vehicle_pose_msg = ros_message_listener()
     # N = 5
 
+    ref_list = np.array(global_path[:,0:2])
+    x_pos = []
+    y_pos = []
+    speeds = []
+    acc = []
+    phi = []
+    x_err = []
+    y_err = []
+    x_dot_err = []
+    y_dot_err = []
+    time_l = []
     init_time = rospy.get_time()
+    delta_t = 0
     while not rospy.is_shutdown():
         try:
             curr_t = rospy.get_time() - init_time
+            delta_t = rospy.get_time() - curr_t
             current_state = vehicle_pose_msg.vehicle_state_output()
             
             reference_pose = reference_pose_selection(x_spline,y_spline, curr_t, N)
@@ -238,17 +261,53 @@ if __name__ == "__main__":
                 # Compute Control Output from Nonlinear Model Predictive Control
                 acceleration, steering = nonlinear_kinematic_mpc_solver(x_ref.T, x.T, N)
                 
-                speed = np.clip(current_state[3] + acceleration*dt, vel_min, vel_max)
-                # speed = current_state[3]+acceleration*dt
+                # speed = np.clip(current_state[3] + acceleration*dt, vel_min, vel_max)
+                speed = current_state[3]+acceleration*dt
                 print(current_state[3],speed)
                 drive_msg = AckermannDrive()
                 drive_msg.speed = speed
                 drive_msg.steering_angle = steering
                 drive_pub.publish(drive_msg)
+
+                if delta_t > dt:
+                    x_pos.append(current_state[0])
+                    y_pos.append(current_state[1])
+                    speeds.append(speed)
+                    acc.append(acceleration)
+                    phi.append(steering)
+                    x_err.append(x_spline(curr_t)-current_state[0])
+                    y_err.append(y_spline(curr_t)-current_state[1])
+                    x_dot_err.append(x_spline(curr_t,1)-current_state[4])
+                    y_dot_err.append(y_spline(curr_t,1)-current_state[5])
+                    time_l.append(curr_t)
             raceline_pub.publish(rviz_markers(global_path,0))
             spline_marker_pub.publish(rviz_markers(reference_pose,1))
+            rate.sleep()
         except IndexError:
             continue
         except RuntimeError:
             continue
-        rate.sleep()
+        except rospy.exceptions.ROSInterruptException:
+            break
+        
+
+    fig, axs = plt.subplots(1, 3)
+    axs[0].plot(x_pos,y_pos,'--',color='orange',label='executed')
+    axs[0].plot(global_path[:,0],global_path[:,1],label='reference')
+
+    axs[1].plot(time_l,phi,color='orange',label='phi')
+    axs[1].plot(time_l,acc,label='acceleration')
+    axs[1].plot(time_l,speeds,'--',color='green',label='speed')
+
+    axs[2].plot(time_l,x_err,label='x error')
+    axs[2].plot(time_l,y_err, color='orange',label='y error')
+    axs[2].plot(time_l,x_dot_err, color='green',label='x dot error')
+    axs[2].plot(time_l,y_dot_err, color='red',label='y dot error')
+    axs[0].grid()
+    axs[0].legend()
+    axs[1].grid()
+    axs[1].legend()
+    axs[2].grid()
+    axs[2].legend()
+    plt.show()
+    
