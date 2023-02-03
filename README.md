@@ -21,6 +21,9 @@ Run using
 Starting params <br>
 `python3 nonlinear_mpc.py initial_path.csv 35 35 5 10 0.04 0.04 0.1 0.01`
 
+For silverstone track <br>
+`python3 nonlinear_mpc.py track_csvs/Silverstone_centerline_modded.csv 25 25 10 4 3 3 0.001 1`
+
 Generally higher r_* values means controller will not erratically change states but won't converge <br>
 Higher q_* values means controller will try to converge quickly and erratically <br>
 u_* values are the change in acc/steering values. Higher values means controller can give larger actuation values <br>
