@@ -17,8 +17,11 @@ Run using
 | u_acc  | Acceleration constraint  |
 | u_steer  | Steering constraint  |
 
-For silverstone track <br>
+For silverstone track with N=5 future_time=3 lap=80<br>
 `python3 nonlinear_mpc.py track_csvs/Silverstone_centerline_modded.csv 25 25 10 4 3 3 0.001 1`
+
+For silverstone track with N=10 future_time=1 lap=80<br>
+`python3 nonlinear_mpc.py track_csvs/Silverstone_centerline_modded.csv 60 60 20 10 1 1 0.001 0.001`
 
 Generally higher r_* values means controller will not erratically change states but won't converge <br>
 Higher q_* values means controller will try to converge quickly and erratically <br>
