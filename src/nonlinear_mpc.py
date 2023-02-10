@@ -25,23 +25,23 @@ import sys
 import matplotlib.pyplot as plt
 
 silverstone_length = 457.1467131573973
-speed = 10
+speed = 6.3
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle
 N_x = 4 # Number of state for MPC design
 N_u = 2 # Number of control for MPC design
-vel_max = 15 # Set the maximum velocity
+vel_max = speed # Set the maximum velocity
 vel_min = 0.1 # Set the minimum velocity
 max_steer = 0.4189 # Set the maximum steering angle
-max_accln = 10
+max_accln = 100
 
 N = 10 # Number of steps in the interval
 
  # Time interval
 time = silverstone_length/speed
 # time = 80 # Time to complete the raceline
-future_time = 1 # Future Look Ahead time
+future_time = 2 # Future Look Ahead time
 dt = future_time/N
 # dt = 1
 
@@ -108,7 +108,7 @@ def nonlinear_kinematic_mpc_solver(x_ref, x_0, N):
             cost += (x_ref[:, t].T - x[:, t].T) @ Q @ (x_ref[:, t] - x[:, t])
         opti.subject_to(x[0, t + 1] == x[0, t] + x[3, t]*casadi.cos(x[2, t])*dt)
         opti.subject_to(x[1, t + 1] == x[1, t] + x[3, t]*casadi.sin(x[2, t])*dt)
-        opti.subject_to(x[2, t + 1] == x[2, t] + x[3, t]*casadi.tan(u[1, t])/WB*dt)
+        opti.subject_to(x[2, t + 1] == x[2, t] + x[3, t]*casadi.tan(u[1, t])*dt/WB)
         opti.subject_to(x[3, t + 1] == x[3, t] + u[0, t]*dt)
 
         if t < N-2:
@@ -340,29 +340,29 @@ if __name__ == "__main__":
                 drive_msg.steering_angle = steering
                 drive_pub.publish(drive_msg)
 
-                if delta_t > dt:
+                # if delta_t > dt:
 
-                    x_pos.append(current_state[0])
-                    y_pos.append(current_state[1])
+                x_pos.append(current_state[0])
+                y_pos.append(current_state[1])
 
-                    speeds.append(speed)
+                speeds.append(speed)
 
-                    acc.append(acceleration)
+                acc.append(acceleration)
 
-                    phi.append(steering)
+                phi.append(steering)
 
-                    x_r_curr = x_spline(curr_t)
-                    x_ref_pos.append(x_r_curr)
-                    x_err.append(x_r_curr-current_state[0])
+                x_r_curr = x_spline(curr_t)
+                x_ref_pos.append(x_r_curr)
+                x_err.append(x_r_curr-current_state[0])
 
-                    y_r_curr = y_spline(curr_t)
-                    y_ref_pos.append(y_r_curr)
-                    y_err.append(y_r_curr-current_state[1])
+                y_r_curr = y_spline(curr_t)
+                y_ref_pos.append(y_r_curr)
+                y_err.append(y_r_curr-current_state[1])
 
-                    x_dot_err.append(x_spline(curr_t,1)-current_state[4])
-                    y_dot_err.append(y_spline(curr_t,1)-current_state[5])
+                x_dot_err.append(x_spline(curr_t,1)-current_state[4])
+                y_dot_err.append(y_spline(curr_t,1)-current_state[5])
 
-                    time_l.append(curr_t)
+                time_l.append(curr_t)
 
 
             raceline_pub.publish(rviz_markers(global_path,0))
@@ -376,10 +376,10 @@ if __name__ == "__main__":
             break
         
 
-    # save = input('Save?')
-    # if save == 'y':
+    save = input('Save?')
+    if save == 'y':
 
-    #     write_csv(time_l,x_ref_pos,x_pos,y_ref_pos,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,vehicle_pose_msg.odom)
+        write_csv(time_l,x_ref_pos,x_pos,y_ref_pos,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,vehicle_pose_msg.odom)
 
         # fig, axs = plt.subplots(1, 3)
         # axs[0].plot(x_pos,y_pos,'--',color='orange',label='executed')

@@ -8,7 +8,7 @@ def get_spline_path(csv_f,time):
     waypoints = np.genfromtxt(path, dtype=float, delimiter=",")
     print(waypoints)
     xCoords = waypoints[1:,1]
-    yCoords = waypoints[1:,2]
+    yCoords = waypoints[1:,0]
 
     track_distance = 0
     for i in range(1,len(xCoords)-1):
