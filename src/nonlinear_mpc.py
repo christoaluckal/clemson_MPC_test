@@ -25,21 +25,23 @@ import sys
 import matplotlib.pyplot as plt
 
 silverstone_length = 457.1467131573973
-speed = 6.3
+osch = 259.65211118046517
+ims = 0
+global_speed = 6
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle
 N_x = 4 # Number of state for MPC design
 N_u = 2 # Number of control for MPC design
-vel_max = speed # Set the maximum velocity
+vel_max = 15 # Set the maximum velocity
 vel_min = 0.1 # Set the minimum velocity
 max_steer = 0.4189 # Set the maximum steering angle
 max_accln = 100
 
-N = 10 # Number of steps in the interval
+N = 4 # Number of steps in the interval
 
  # Time interval
-time = silverstone_length/speed
+time = silverstone_length/global_speed
 # time = 80 # Time to complete the raceline
 future_time = 2 # Future Look Ahead time
 dt = future_time/N
@@ -150,7 +152,8 @@ def rviz_markers(pose,idx):
         points.pose.orientation.w = 1
         points.scale.x = 0.5
         points.scale.y = 0.5
-        points.color.r = 1
+        points.color.r = 0.5
+        points.color.g = 0.5
         points.color.a = 1
 
         for i in pose:
@@ -206,9 +209,8 @@ def reference_pose_selection(x_spline,y_spline, curr_t,N):
 def write_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,odoms):
     
     track = 'silverstone'
-    trial_speed = 5
     # trial_num = 1
-    folder = 'trials/'+track+'/speed_'+str(trial_speed)
+    folder = 'trials/'+track+'/speed_'+str(global_speed)
     import os
     try: 
         os.mkdir(folder) 
@@ -218,7 +220,7 @@ def write_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_dot_er
     fig, axs = plt.subplots(1, 3)
     axs[0].plot(x_pos,y_pos,'--',color='orange',label='executed')
     axs[0].plot(global_path[:,0],global_path[:,1],label='reference')
-    axs[0].set_title('Speed:{} m/s'.format(trial_speed))
+    axs[0].set_title('Speed:{} m/s'.format(global_speed))
 
     axs[1].plot(time_l,phi,color='orange',label='phi')
     axs[1].plot(time_l,acc,label='acceleration')
@@ -312,13 +314,14 @@ if __name__ == "__main__":
     time_l = []
     init_time = rospy.get_time()
     delta_t = 0
+    speed_ref = []
     odoms = []
     while not rospy.is_shutdown():
         try:
             curr_t = rospy.get_time() - init_time
             delta_t = rospy.get_time() - curr_t
             current_state = vehicle_pose_msg.vehicle_state_output()
-            
+            # rospy.loginfo(curr_t)
             
             # Transform the reference pose to vehicle coordinate
             # if curr_t > future_time:
@@ -359,6 +362,8 @@ if __name__ == "__main__":
                 y_ref_pos.append(y_r_curr)
                 y_err.append(y_r_curr-current_state[1])
 
+                speed_ref.append(math.sqrt(x_spline(curr_t,1)**2+y_spline(curr_t,1)**2))
+
                 x_dot_err.append(x_spline(curr_t,1)-current_state[4])
                 y_dot_err.append(y_spline(curr_t,1)-current_state[5])
 
@@ -378,7 +383,9 @@ if __name__ == "__main__":
 
     save = input('Save?')
     if save == 'y':
-
+        # plt.plot(time_l,speeds)
+        # plt.plot(time_l,speed_ref,color='red')
+        # plt.show()
         write_csv(time_l,x_ref_pos,x_pos,y_ref_pos,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,vehicle_pose_msg.odom)
 
         # fig, axs = plt.subplots(1, 3)
