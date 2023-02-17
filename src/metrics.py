@@ -41,10 +41,10 @@ print("KABSH:",rmsd)
 # plt.plot(xr,yr)
 # plt.plot(x,y)
 # plt.show()
-plt.plot(t,s)
+# plt.plot(t,s)
 # plt.plot(t,xe)
 # plt.plot(t,ye)
-plt.show()
+# plt.show()
 sd = 0
 for i in range(len(t)):
     sd+= math.sqrt((xr[i]-x[i])**2+(yr[i]-y[i])**2)
