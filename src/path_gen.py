@@ -6,9 +6,24 @@ def get_spline_path(csv_f,time):
     path = csv_f
 
     waypoints = np.genfromtxt(path, dtype=float, delimiter=",")
-    print(waypoints)
     xCoords = waypoints[1:,1]
     yCoords = waypoints[1:,0]
+
+    correction_angle = -math.atan2(yCoords[1]-yCoords[0],xCoords[1]- xCoords[0])
+    R_z = np.array(
+                    [[math.cos(correction_angle), -math.sin(correction_angle)],
+                    [math.sin(correction_angle), math.cos(correction_angle)]])
+    coords = zip(xCoords, yCoords)
+    corrected_xCoords = []
+    corrected_yCoords = []
+
+    for p in coords:
+        p = np.matmul(R_z,np.array(p).T)
+        corrected_xCoords.append(p[0])
+        corrected_yCoords.append(p[1])
+
+    xCoords = corrected_xCoords
+    yCoords = corrected_yCoords
 
     track_distance = 0
     for i in range(1,len(xCoords)-1):

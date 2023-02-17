@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 silverstone_length = 457.1467131573973
 osch = 259.65211118046517
 ims = 0
-global_speed = 6
+global_speed = 7
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle
@@ -38,7 +38,7 @@ vel_min = 0.1 # Set the minimum velocity
 max_steer = 0.4189 # Set the maximum steering angle
 max_accln = 100
 
-N = 4 # Number of steps in the interval
+N = 5 # Number of steps in the interval
 
  # Time interval
 time = silverstone_length/global_speed
