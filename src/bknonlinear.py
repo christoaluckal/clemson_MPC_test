@@ -24,7 +24,7 @@ import path_gen
 import sys
 import matplotlib.pyplot as plt
 
-global_speed = 12
+global_speed = 7
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle
@@ -36,8 +36,7 @@ max_steer = 0.4189 # Set the maximum steering angle
 max_accln = 100
 
 N = 5 # Number of steps in the interval
-future_time = 0.5 # Future Look Ahead time
-dt = future_time/N
+
 
 track = sys.argv[1]
 if track == 'i':
@@ -70,15 +69,15 @@ trial = int(sys.argv[10])
 
  # Time interval
 time = track_length/global_speed
-print("Time:",time)
-print("Speed:",track_length/time)
+
 # for i in range(5,13):
 #     print(f"{i} m/s",track_length/i)
 
 # exit(1)
 
 # time = 80 # Time to complete the raceline
-
+future_time = 2 # Future Look Ahead time
+dt = future_time/N
 # dt = 1
 
 class ros_message_listener:
@@ -209,15 +208,14 @@ def rviz_markers(pose,idx):
 
 def reference_pose_selection(x_spline,y_spline, curr_t,N):
     delta_t = future_time
-    # while curr_t+delta_t > time:
-    #     delta_t-=dt
-    # if delta_t<0.01:
-    #     curr_t = 0
-    #     delta_t = future_time
+    while curr_t+delta_t > time:
+        delta_t-=dt
+
+    if delta_t<0.01:
+        curr_t = 0
+        delta_t = future_time
     
     t_vec = np.linspace(curr_t,curr_t+delta_t,N)
-    if curr_t+delta_t > time:
-        t_vec = t_vec%time
     xTraj = x_spline(t_vec)
     yTraj = y_spline(t_vec)
 
@@ -231,7 +229,7 @@ def reference_pose_selection(x_spline,y_spline, curr_t,N):
 
     return path_array
 
-def write_full_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,odoms):
+def write_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,odoms):
     
     # trial_num = 1
     folder = 'trials/'+track_name+'/speed_'+str(global_speed)
@@ -265,7 +263,7 @@ def write_full_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_d
     # plt.savefig(folder+'/trial_{}.png'.format(trial))
 
     # print(folder)
-    with open(folder+'/{}_{}_trial_{}.csv'.format(track_name,time,trial),'w+') as csv_f:
+    with open(folder+'/{}_{}_trial_{}.csv'.format(trial),'w+') as csv_f:
         csv_f.write('N:{},future:{},qx:{},qy:{},q_yaw:{},q_vel:{},r_acc:{},r_steer:{},u_steer:{},u_acc:{}\n\n\n'.format(N,future_time,qx,qy,q_yaw,q_vel,r_acc,r_steer,u_steer,u_acc))
         csv_f.write('time,x_ref,x_pos,y_ref,y_pos,speed,acc,phi,x_err,y_err,x_dot_err,y_dot_err\n')
         for i in range(len(time_l)):
@@ -283,63 +281,30 @@ def write_full_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_d
             yd_e = y_dot_err[i]
             csv_f.write('{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(t,xr,x,yr,y,s,a,p,xe,ye,xd_e,yd_e))
 
+    with open(folder+'/trial_{}_odom.csv'.format(trial),'w+') as csv_f:
+        csv_f.write('x,y,x_vel,y_vel\n')
+        for i in odoms:
+            csv_f.write('{},{},{},{}\n'.format(i[0],i[1],i[2],i[3]))
 
-def write_small_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,odoms):
-    
-    # trial_num = 1
-    folder = 'trials/'+track_name+'/speed_'+str(global_speed)
-    import os
-    try: 
-        os.mkdir(folder) 
-    except OSError as error:
-        pass 
-
-    fig, axs = plt.subplots(1, 3)
-    axs[0].plot(x_pos,y_pos,'--',color='orange',label='executed')
-    axs[0].plot(global_path[:,0],global_path[:,1],label='reference')
-    axs[0].set_title('Speed:{} m/s'.format(global_speed))
-
-    axs[1].plot(time_l,phi,color='orange',label='phi')
-    axs[1].plot(time_l,acc,label='acceleration')
-    axs[1].plot(time_l,speeds,'--',color='green',label='speed')
-
-    axs[2].plot(time_l,x_err,label='x error')
-    axs[2].plot(time_l,y_err, color='orange',label='y error')
-    axs[2].plot(time_l,x_dot_err, color='green',label='x dot error')
-    axs[2].plot(time_l,y_dot_err, color='red',label='y dot error')
-    axs[0].grid()
-    axs[0].legend()
-    axs[1].grid()
-    axs[1].legend()
-    axs[2].grid()
-    axs[2].legend()
-    plt.plot()
-    # plt.show()
-    # plt.savefig(folder+'/trial_{}.png'.format(trial))
-
-    # print(folder)
-    with open(folder+'/{}_{}_trial_{}.csv'.format(track_name,time,trial),'w+') as csv_f:
-        csv_f.write('N:{},future:{},qx:{},qy:{},q_yaw:{},q_vel:{},r_acc:{},r_steer:{},u_steer:{},u_acc:{}\n\n\n'.format(N,future_time,qx,qy,q_yaw,q_vel,r_acc,r_steer,u_steer,u_acc))
-        csv_f.write('time,x_pos,y_pos\n')
-        for i in range(len(time_l)):
-            t = time_l[i]
-            # xr = x_ref[i]
-            x = x_pos[i]
-            # yr = y_ref[i]
-            y = y_pos[i]
-            # s = speeds[i]
-            # a = acc[i]
-            # p = phi[i]
-            # xe = x_err[i]
-            # ye = y_err[i]
-            # xd_e = x_dot_err[i]
-            # yd_e = y_dot_err[i]
-            csv_f.write('{},{},{}\n'.format(t,x,y))
-
-    # with open(folder+'/trial_{}_odom.csv'.format(trial),'w+') as csv_f:
-    #     csv_f.write('x,y,x_vel,y_vel\n')
-    #     for i in odoms:
-    #         csv_f.write('{},{},{},{}\n'.format(i[0],i[1],i[2],i[3]))
+def goal_pose_publisher(goal_pose, N):
+    frame_id = 'map'
+    msg = PoseArray()
+    msg.header.frame_id = frame_id
+    for i in range(N):
+        x = goal_pose[i,0]
+        y = goal_pose[i,1]
+        yaw = goal_pose[i,2]
+        quaternion = quaternion_from_euler(0.0, 0.0, yaw)
+        pose = Pose()
+        pose.position.x = x
+        pose.position.y = y
+        pose.position.z = 0.0
+        pose.orientation.x = quaternion[0]
+        pose.orientation.y = quaternion[1]
+        pose.orientation.z = quaternion[2]
+        pose.orientation.w = quaternion[3]
+        msg.poses.append(pose)
+    return msg
 
 if __name__ == "__main__":
     rospy.init_node('nonlinear_mpc')
@@ -348,7 +313,7 @@ if __name__ == "__main__":
     raceline_pub = rospy.Publisher('visualization_markers',Marker,queue_size=1)
     spline_marker_pub = rospy.Publisher('visualization_markers',Marker,queue_size=1)
 
-    csv_f = track_file
+    csv_f = sys.argv[1]
 
     global_path,x_spline,y_spline = path_gen.get_spline_path(csv_f,time)
 
@@ -379,56 +344,52 @@ if __name__ == "__main__":
             delta_t = rospy.get_time() - curr_t
             current_state = vehicle_pose_msg.vehicle_state_output()
             # rospy.loginfo(curr_t)
-            if curr_t > time + 1:
-                drive_msg = AckermannDrive()
-                drive_pub.publish(drive_msg)
-                break
+            
             # Transform the reference pose to vehicle coordinate
             # if curr_t > future_time:
-            # if True:
-            reference_pose = reference_pose_selection(x_spline,y_spline, curr_t, N)
-            
-            x_ref = np.zeros((N, 4))
-            for i in range(N):
-                x, ref = vehicle_coordinate_transformation(reference_pose[i,:], current_state)
-                x_ref[i, :] = ref
-            
-            # Compute Control Output from Nonlinear Model Predictive Control
-            acceleration, steering = nonlinear_kinematic_mpc_solver(x_ref.T, x.T, N)
-            
-            # speed = np.clip(current_state[3] + acceleration*dt, vel_min, vel_max)
-            speed = current_state[3]+acceleration*dt
-            # print(current_state[3],speed)
-            drive_msg = AckermannDrive()
-            drive_msg.speed = speed
-            drive_msg.steering_angle = steering
-            drive_pub.publish(drive_msg)
+            if True:
+                reference_pose = reference_pose_selection(x_spline,y_spline, curr_t, N)
+                x_ref = np.zeros((N, 4))
+                for i in range(N):
+                    x, ref = vehicle_coordinate_transformation(reference_pose[i,:], current_state)
+                    x_ref[i, :] = ref
+                
+                # Compute Control Output from Nonlinear Model Predictive Control
+                acceleration, steering = nonlinear_kinematic_mpc_solver(x_ref.T, x.T, N)
+                
+                # speed = np.clip(current_state[3] + acceleration*dt, vel_min, vel_max)
+                speed = current_state[3]+acceleration*dt
+                # print(current_state[3],speed)
+                drive_msg = AckermannDrive()
+                drive_msg.speed = speed
+                drive_msg.steering_angle = steering
+                drive_pub.publish(drive_msg)
 
-            # if delta_t > dt:
+                # if delta_t > dt:
 
-            x_pos.append(current_state[0])
-            y_pos.append(current_state[1])
+                x_pos.append(current_state[0])
+                y_pos.append(current_state[1])
 
-            speeds.append(speed)
+                speeds.append(speed)
 
-            acc.append(acceleration)
+                acc.append(acceleration)
 
-            phi.append(steering)
+                phi.append(steering)
 
-            x_r_curr = x_spline(curr_t)
-            x_ref_pos.append(x_r_curr)
-            x_err.append(x_r_curr-current_state[0])
+                x_r_curr = x_spline(curr_t)
+                x_ref_pos.append(x_r_curr)
+                x_err.append(x_r_curr-current_state[0])
 
-            y_r_curr = y_spline(curr_t)
-            y_ref_pos.append(y_r_curr)
-            y_err.append(y_r_curr-current_state[1])
+                y_r_curr = y_spline(curr_t)
+                y_ref_pos.append(y_r_curr)
+                y_err.append(y_r_curr-current_state[1])
 
-            speed_ref.append(math.sqrt(x_spline(curr_t,1)**2+y_spline(curr_t,1)**2))
+                speed_ref.append(math.sqrt(x_spline(curr_t,1)**2+y_spline(curr_t,1)**2))
 
-            x_dot_err.append(x_spline(curr_t,1)-current_state[4])
-            y_dot_err.append(y_spline(curr_t,1)-current_state[5])
+                x_dot_err.append(x_spline(curr_t,1)-current_state[4])
+                y_dot_err.append(y_spline(curr_t,1)-current_state[5])
 
-            time_l.append(curr_t)
+                time_l.append(curr_t)
 
 
             raceline_pub.publish(rviz_markers(global_path,0))
@@ -442,5 +403,30 @@ if __name__ == "__main__":
             break
         
 
-    write_full_csv(time_l,x_ref_pos,x_pos,y_ref_pos,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,vehicle_pose_msg.odom)
+    save = input('Save?')
+    if save == 'y':
+        # plt.plot(time_l,speeds)
+        # plt.plot(time_l,speed_ref,color='red')
+        # plt.show()
+        write_csv(time_l,x_ref_pos,x_pos,y_ref_pos,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,vehicle_pose_msg.odom)
 
+        # fig, axs = plt.subplots(1, 3)
+        # axs[0].plot(x_pos,y_pos,'--',color='orange',label='executed')
+        # axs[0].plot(global_path[:,0],global_path[:,1],label='reference')
+
+        # axs[1].plot(time_l,phi,color='orange',label='phi')
+        # axs[1].plot(time_l,acc,label='acceleration')
+        # axs[1].plot(time_l,speeds,'--',color='green',label='speed')
+
+        # axs[2].plot(time_l,x_err,label='x error')
+        # axs[2].plot(time_l,y_err, color='orange',label='y error')
+        # axs[2].plot(time_l,x_dot_err, color='green',label='x dot error')
+        # axs[2].plot(time_l,y_dot_err, color='red',label='y dot error')
+        # axs[0].grid()
+        # axs[0].legend()
+        # axs[1].grid()
+        # axs[1].legend()
+        # axs[2].grid()
+        # axs[2].legend()
+        # plt.show()
+    
