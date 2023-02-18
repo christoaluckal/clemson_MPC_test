@@ -23,8 +23,9 @@ import os
 import path_gen
 import sys
 import matplotlib.pyplot as plt
+from std_srvs.srv import SetBool
 
-global_speed = 12
+global_speed = 10
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle
@@ -35,8 +36,8 @@ vel_min = 0.1 # Set the minimum velocity
 max_steer = 0.4189 # Set the maximum steering angle
 max_accln = 100
 
-N = 5 # Number of steps in the interval
-future_time = 0.5 # Future Look Ahead time
+N = 6 # Number of steps in the interval
+future_time = 1.5 # Future Look Ahead time
 dt = future_time/N
 
 track = sys.argv[1]
@@ -343,6 +344,13 @@ def write_small_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_
 
 if __name__ == "__main__":
     rospy.init_node('nonlinear_mpc')
+    rospy.wait_for_service("/reset_car")
+    reset = rospy.ServiceProxy("/reset_car", SetBool)
+    try:
+        reset_status = reset(True)
+        rospy.sleep(1.2)
+    except rospy.ServiceException as e:
+        rospy.signal_shutdown("Could not reset world")
     
     drive_pub = rospy.Publisher('car_1/command', AckermannDrive, queue_size=1)
     raceline_pub = rospy.Publisher('visualization_markers',Marker,queue_size=1)
