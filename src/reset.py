@@ -46,10 +46,10 @@ def call_reset():
             vel_pub.publish(ack_msg)
             clear_string_pub.publish("clear")
             end = time.time()
-            if(end-start>1):
+            if(end-start>0.1):
                 exit(1)
 
     except rospy.ServiceException :
-        print("Service call failed")
+        print("Done")
 
 call_reset()

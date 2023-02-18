@@ -443,4 +443,3 @@ if __name__ == "__main__":
         
 
     write_full_csv(time_l,x_ref_pos,x_pos,y_ref_pos,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,vehicle_pose_msg.odom)
-
