@@ -25,7 +25,7 @@ import sys
 import matplotlib.pyplot as plt
 from std_srvs.srv import SetBool
 
-global_speed = 10
+global_speed = 6
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle

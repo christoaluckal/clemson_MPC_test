@@ -3,7 +3,6 @@ from scipy.spatial.transform import Rotation
 import matplotlib.pyplot as plt
 import numpy as np
 import math
-from sklearn.metrics import mean_squared_error
 csv_f = open(sys.argv[1])
 
 t = []
@@ -20,14 +19,11 @@ for i in csv_f.readlines()[5:]:
     vals = i.split(',')
     z.append(0)
     t.append(float(vals[0]))
-    xr.append(float(vals[1]))
-    x.append(float(vals[2]))
-    yr.append(float(vals[3]))
-    y.append(float(vals[4]))
-    s.append(float(vals[5]))
-    a.append(float(vals[6]))
-    xe.append(float(vals[8]))
-    ye.append(float(vals[9]))
+    x.append(float(vals[1]))
+    y.append(float(vals[2]))
+    xr.append(float(vals[3]))
+    yr.append(float(vals[4]))
+
 
 refs = np.array([xr,yr,z])
 refs = refs.T
@@ -53,6 +49,3 @@ for i in range(len(t)):
 rmsd = sd/len(t)
 
 print("REG:",rmsd)
-
-print(np.sum(np.power((refs-actual),2)))
-print("SK:",mean_squared_error(actual,refs))

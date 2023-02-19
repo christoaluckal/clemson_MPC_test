@@ -35,7 +35,7 @@ def get_spline_path(csv_f,time):
     xTrajCS = CubicSpline(tvec,corrected_xCoords)
     yTrajCS = CubicSpline(tvec,corrected_yCoords)
 
-    tvec = np.linspace(0,tmax,1000)
+    tvec = np.linspace(0,tmax,300)
 
     x_ref = np.array(xTrajCS(tvec)).reshape(-1,1)
     y_ref = np.array(yTrajCS(tvec)).reshape(-1,1)

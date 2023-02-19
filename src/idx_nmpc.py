@@ -232,7 +232,7 @@ def reference_pose_selection(x_spline,y_spline, curr_t,N):
 
     return path_array
 
-def write_full_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,odoms):
+def write_full_csv(time_l,x_pos,y_pos,x_ref,y_ref,refs):
     
     # trial_num = 1
     folder = 'trials/'+track_name+'/speed_'+str(global_speed)
@@ -242,50 +242,55 @@ def write_full_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_d
     except OSError as error:
         pass 
 
-    fig, axs = plt.subplots(1, 3)
-    axs[0].plot(x_pos,y_pos,'--',color='orange',label='executed')
-    axs[0].plot(global_path[:,0],global_path[:,1],label='reference')
-    axs[0].set_title('Speed:{} m/s'.format(global_speed))
+    # fig, axs = plt.subplots(1, 3)
+    # axs[0].plot(x_pos,y_pos,'--',color='orange',label='executed')
+    # axs[0].plot(refs[:,0],refs[:,1],label='reference')
+    # axs[0].set_title('Speed:{} m/s'.format(global_speed))
 
-    axs[1].plot(time_l,phi,color='orange',label='phi')
-    axs[1].plot(time_l,acc,label='acceleration')
-    axs[1].plot(time_l,speeds,'--',color='green',label='speed')
+    # axs[1].plot(time_l,phi,color='orange',label='phi')
+    # axs[1].plot(time_l,acc,label='acceleration')
+    # axs[1].plot(time_l,speeds,'--',color='green',label='speed')
 
-    axs[2].plot(time_l,x_err,label='x error')
-    axs[2].plot(time_l,y_err, color='orange',label='y error')
-    axs[2].plot(time_l,x_dot_err, color='green',label='x dot error')
-    axs[2].plot(time_l,y_dot_err, color='red',label='y dot error')
-    axs[0].grid()
-    axs[0].legend()
-    axs[1].grid()
-    axs[1].legend()
-    axs[2].grid()
-    axs[2].legend()
-    plt.plot()
+    # axs[2].plot(time_l,x_err,label='x error')
+    # axs[2].plot(time_l,y_err, color='orange',label='y error')
+    # axs[2].plot(time_l,x_dot_err, color='green',label='x dot error')
+    # axs[2].plot(time_l,y_dot_err, color='red',label='y dot error')
+    # axs[0].grid()
+    # axs[0].legend()
+    # axs[1].grid()
+    # axs[1].legend()
+    # axs[2].grid()
+    # axs[2].legend()
+    # plt.plot()
     # plt.show()
     # plt.savefig(folder+'/trial_{}.png'.format(trial))
 
     # print(folder)
     with open(folder+'/{}_{}_trial_{}.csv'.format(track_name,time,trial),'w+') as csv_f:
         csv_f.write('N:{},future:{},qx:{},qy:{},q_yaw:{},q_vel:{},r_acc:{},r_steer:{},u_steer:{},u_acc:{}\n\n\n'.format(N,future_time,qx,qy,q_yaw,q_vel,r_acc,r_steer,u_steer,u_acc))
-        csv_f.write('time,x_ref,x_pos,y_ref,y_pos,speed,acc,phi,x_err,y_err,x_dot_err,y_dot_err\n')
+        csv_f.write('time,x_pos,y_pos\n')
         for i in range(len(time_l)):
             t = time_l[i]
             xr = x_ref[i]
             x = x_pos[i]
             yr = y_ref[i]
             y = y_pos[i]
-            s = speeds[i]
-            a = acc[i]
-            p = phi[i]
-            xe = x_err[i]
-            ye = y_err[i]
-            xd_e = x_dot_err[i]
-            yd_e = y_dot_err[i]
-            csv_f.write('{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(t,xr,x,yr,y,s,a,p,xe,ye,xd_e,yd_e))
+            # s = speeds[i]
+            # a = acc[i]
+            # p = phi[i]
+            # xe = x_err[i]
+            # ye = y_err[i]
+            # xd_e = x_dot_err[i]
+            # yd_e = y_dot_err[i]
+            csv_f.write('{},{},{},{},{}\n'.format(t,x,y,xr,yr))
+
+    # with open(folder+'/trial_{}_odom.csv'.format(trial),'w+') as csv_f:
+    #     csv_f.write('x,y,x_vel,y_vel\n')
+    #     for i in odoms:
+    #         csv_f.write('{},{},{},{}\n'.format(i[0],i[1],i[2],i[3]))
 
 
-def write_small_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,odoms):
+def write_small_csv(time_l,x_pos,y_pos,refs):
     
     # trial_num = 1
     folder = 'trials/'+track_name+'/speed_'+str(global_speed)
@@ -295,26 +300,26 @@ def write_small_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_
     except OSError as error:
         pass 
 
-    fig, axs = plt.subplots(1, 3)
-    axs[0].plot(x_pos,y_pos,'--',color='orange',label='executed')
-    axs[0].plot(global_path[:,0],global_path[:,1],label='reference')
-    axs[0].set_title('Speed:{} m/s'.format(global_speed))
+    # fig, axs = plt.subplots(1, 3)
+    # axs[0].plot(x_pos,y_pos,'--',color='orange',label='executed')
+    # axs[0].plot(refs[:,0],refs[:,1],label='reference')
+    # axs[0].set_title('Speed:{} m/s'.format(global_speed))
 
-    axs[1].plot(time_l,phi,color='orange',label='phi')
-    axs[1].plot(time_l,acc,label='acceleration')
-    axs[1].plot(time_l,speeds,'--',color='green',label='speed')
+    # axs[1].plot(time_l,phi,color='orange',label='phi')
+    # axs[1].plot(time_l,acc,label='acceleration')
+    # axs[1].plot(time_l,speeds,'--',color='green',label='speed')
 
-    axs[2].plot(time_l,x_err,label='x error')
-    axs[2].plot(time_l,y_err, color='orange',label='y error')
-    axs[2].plot(time_l,x_dot_err, color='green',label='x dot error')
-    axs[2].plot(time_l,y_dot_err, color='red',label='y dot error')
-    axs[0].grid()
-    axs[0].legend()
-    axs[1].grid()
-    axs[1].legend()
-    axs[2].grid()
-    axs[2].legend()
-    plt.plot()
+    # axs[2].plot(time_l,x_err,label='x error')
+    # axs[2].plot(time_l,y_err, color='orange',label='y error')
+    # axs[2].plot(time_l,x_dot_err, color='green',label='x dot error')
+    # axs[2].plot(time_l,y_dot_err, color='red',label='y dot error')
+    # axs[0].grid()
+    # axs[0].legend()
+    # axs[1].grid()
+    # axs[1].legend()
+    # axs[2].grid()
+    # axs[2].legend()
+    # plt.plot()
     # plt.show()
     # plt.savefig(folder+'/trial_{}.png'.format(trial))
 
@@ -394,15 +399,19 @@ if __name__ == "__main__":
         # if curr_t > future_time:
         # if True:
         # reference_pose = reference_pose_selection(x_spline,y_spline, curr_t, N)
-        ref = refs[i:i+N,:]
+        ref = []
+        for ref_idx in range(i,i+N):
+            ref.append(refs[int(ref_idx%refs.shape[0])])
+        # ref = refs[i:i+N,:]
+        ref = np.array(ref)
         x_ref = np.zeros((N, 4))
-        for i in range(N):
-            x, l_ref = vehicle_coordinate_transformation(ref[i,:], current_state)
-            x_ref[i, :] = l_ref
+        for j in range(N):
+            x, l_ref = vehicle_coordinate_transformation(ref[j,:], current_state)
+            x_ref[j, :] = l_ref
             
-        x = np.array([current_state[0],current_state[1],current_state[2],current_state[3]])
+        # x = np.array([current_state[0],current_state[1],current_state[2],current_state[3]])
         # Compute Control Output from Nonlinear Model Predictive Control
-        acceleration, steering = nonlinear_kinematic_mpc_solver(ref.T, x.T , N)
+        acceleration, steering = nonlinear_kinematic_mpc_solver(x_ref.T, x.T , N)
         
         # speed = np.clip(current_state[3] + acceleration*dt, vel_min, vel_max)
         speed = current_state[3]+acceleration*dt
@@ -423,13 +432,11 @@ if __name__ == "__main__":
 
         phi.append(steering)
 
-        # x_r_curr = x_spline(curr_t)
-        # x_ref_pos.append(x_r_curr)
-        # x_err.append(x_r_curr-current_state[0])
+        x_ref_pos.append(refs[i,0])
+        x_err.append(refs[i,0]-current_state[0])
 
-        # y_r_curr = y_spline(curr_t)
-        # y_ref_pos.append(y_r_curr)
-        # y_err.append(y_r_curr-current_state[1])
+        y_ref_pos.append(refs[i,1])
+        y_err.append(refs[i,1]-current_state[1])
 
         # speed_ref.append(math.sqrt(x_spline(curr_t,1)**2+y_spline(curr_t,1)**2))
 
@@ -442,7 +449,7 @@ if __name__ == "__main__":
         raceline_pub.publish(rviz_markers(refs[:,0:2],0))
         spline_marker_pub.publish(rviz_markers(ref[:,0:2],1))
         r.sleep() 
-
+    write_full_csv(time_l,x_pos,y_pos,x_ref_pos,y_ref_pos,refs)
     rospy.spin()
         
-    # write_full_csv(time_l,x_ref_pos,x_pos,y_ref_pos,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,vehicle_pose_msg.odom)
+    
