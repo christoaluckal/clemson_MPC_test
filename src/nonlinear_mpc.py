@@ -25,9 +25,9 @@ import sys
 import matplotlib.pyplot as plt
 from std_srvs.srv import SetBool
 
-global_speed = 8
-N = 5 # Number of steps in the interval
-future_time = 1 # Future Look Ahead time
+global_speed = 6
+N = 4 # Number of steps in the interval
+future_time = 1.5 # Future Look Ahead time
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle
@@ -70,7 +70,7 @@ u_acc = float(sys.argv[8]) # Accln constraints
 trial = int(sys.argv[10])
 
  # Time interval
-time = track_length/global_speed
+time = int(track_length/global_speed)
 print("N:",N)
 print("ft:",future_time)
 print("Time:",time)
