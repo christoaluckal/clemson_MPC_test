@@ -25,7 +25,9 @@ import sys
 import matplotlib.pyplot as plt
 from std_srvs.srv import SetBool
 
-global_speed = 6
+global_speed = 8
+N = 5 # Number of steps in the interval
+future_time = 1 # Future Look Ahead time
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle
@@ -35,10 +37,8 @@ vel_max = 15 # Set the maximum velocity
 vel_min = 0.1 # Set the minimum velocity
 max_steer = 0.4189 # Set the maximum steering angle
 max_accln = 100
-
-N = 6 # Number of steps in the interval
-future_time = 1.5 # Future Look Ahead time
 dt = future_time/N
+
 
 track = sys.argv[1]
 if track == 'i':
@@ -71,6 +71,8 @@ trial = int(sys.argv[10])
 
  # Time interval
 time = track_length/global_speed
+print("N:",N)
+print("ft:",future_time)
 print("Time:",time)
 print("Speed:",track_length/time)
 # for i in range(5,13):
