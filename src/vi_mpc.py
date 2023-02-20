@@ -20,7 +20,7 @@ import casadi
 from timeit import default_timer as timer
 import csv
 import os
-import path_gen
+import vi_pathgen as path_gen
 import sys
 import matplotlib.pyplot as plt
 from std_srvs.srv import SetBool
