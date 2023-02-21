@@ -25,9 +25,9 @@ import sys
 import matplotlib.pyplot as plt
 from std_srvs.srv import SetBool
 
-global_speed = 1
+global_speed = 1.5
 N = 4 # Number of steps in the interval
-future_time = 1.5 # Future Look Ahead time
+future_time = 0.3 # Future Look Ahead time
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle
@@ -44,7 +44,7 @@ track = sys.argv[1]
 if track == 'vi':
     track_name = 'vi_ims'
     track_file = 'track_csvs/IMS_centerline_forVicon.csv'
-    track_length = 292.3692423257752
+    track_length = 19.820
 elif track == 'v8':
     track_name = 'vi_figure8'
     track_file = 'track_csvs/figure8_centerline_forVicon.csv'
@@ -89,7 +89,7 @@ class ros_message_listener:
         self.x_vel = 0
         self.y_vel = 0
         self.odom = []
-        self.odom_sub = rospy.Subscriber('/audubon/base/odom', Odometry, self.odom_callback)
+        self.odom_sub = rospy.Subscriber('/car_1/base/odom', Odometry, self.odom_callback)
 
     def odom_callback(self, msg):
         x = msg.pose.pose.position.x
@@ -173,10 +173,10 @@ def rviz_markers(pose,idx):
         points.ns = "raceline"
         points.action = Marker.ADD
         points.pose.orientation.w = 1
-        points.scale.x = 0.5
-        points.scale.y = 0.5
-        points.color.r = 0.5
-        points.color.g = 0.5
+        points.scale.x = 0.05
+        points.scale.y = 0.05
+        points.color.r = 0.05
+        points.color.g = 0.05
         points.color.a = 1
 
         for i in pose:
@@ -192,8 +192,8 @@ def rviz_markers(pose,idx):
         points.ns = "spline"
         points.action = Marker.ADD
         points.pose.orientation.w = 1
-        points.scale.x = 1
-        points.scale.y = 1
+        points.scale.x = 0.1
+        points.scale.y = 0.1
         points.color.b = 1
         points.color.a = 1
 
@@ -350,7 +350,7 @@ if __name__ == "__main__":
     except rospy.ServiceException as e:
         rospy.signal_shutdown("Could not reset world")
     
-    drive_pub = rospy.Publisher('audubon/drive', AckermannDrive, queue_size=1)
+    drive_pub = rospy.Publisher('car_1/command', AckermannDrive, queue_size=1)
     raceline_pub = rospy.Publisher('visualization_markers',Marker,queue_size=1)
     spline_marker_pub = rospy.Publisher('visualization_markers',Marker,queue_size=1)
 
