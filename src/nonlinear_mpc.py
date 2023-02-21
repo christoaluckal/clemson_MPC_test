@@ -25,7 +25,7 @@ import sys
 import matplotlib.pyplot as plt
 from std_srvs.srv import SetBool
 
-global_speed = 8
+global_speed = 9
 N = 5 # Number of steps in the interval
 future_time = 1 # Future Look Ahead time
 
