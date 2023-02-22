@@ -1,0 +1,4 @@
+N:4,future:1,qx:0.5,qy:0.5,q_yaw:0.5,q_vel:0.01,r_acc:0.05,r_steer:0.05,u_steer:1.0,u_acc:1.0
+
+
+time,x_ref,x_pos,y_ref,y_pos,speed,acc,phi,x_err,y_err,x_dot_err,y_dot_err

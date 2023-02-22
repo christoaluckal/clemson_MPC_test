@@ -25,9 +25,9 @@ import sys
 import matplotlib.pyplot as plt
 from std_srvs.srv import SetBool
 
-global_speed = 9
-N = 5 # Number of steps in the interval
-future_time = 1 # Future Look Ahead time
+global_speed = 7
+N = 4 # Number of steps in the interval
+future_time = 0.8 # Future Look Ahead time
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle
