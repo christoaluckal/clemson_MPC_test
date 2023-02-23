@@ -25,9 +25,9 @@ import sys
 import matplotlib.pyplot as plt
 from std_srvs.srv import SetBool
 
-global_speed = 7
-N = 4 # Number of steps in the interval
-future_time = 0.8 # Future Look Ahead time
+global_speed = 12
+N = 5 # Number of steps in the interval
+future_time = 1 # Future Look Ahead time
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle
@@ -42,19 +42,19 @@ dt = future_time/N
 
 track = sys.argv[1]
 if track == 'i':
-    track_name = 'ims'
+    track_name = 'IMS'
     track_file = 'track_csvs/IMS_centerline.csv'
     track_length = 292.3692423257752
 elif track == 'm':
-    track_name = 'monza'
+    track_name = 'Monza'
     track_file = 'track_csvs/Monza_centerline.csv'
     track_length = 444.9285006996924
 elif track == 's':
-    track_name = 'silverstone'
+    track_name = 'Silverstone'
     track_file = 'track_csvs/Silverstone_centerline.csv'
     track_length = 457.1467131573973
 elif track == 'o':
-    track_name = 'osch'
+    track_name = 'Oschersleben'
     track_file = 'track_csvs/Oschersleben_centerline.csv'
     track_length = 259.65211118046517
 
@@ -269,7 +269,7 @@ def write_full_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_d
 
     # print(folder)
     with open(folder+'/{}_{}_trial_{}.csv'.format(track_name,time,trial),'w+') as csv_f:
-        csv_f.write('N:{},future:{},qx:{},qy:{},q_yaw:{},q_vel:{},r_acc:{},r_steer:{},u_steer:{},u_acc:{}\n\n\n'.format(N,future_time,qx,qy,q_yaw,q_vel,r_acc,r_steer,u_steer,u_acc))
+        # csv_f.write('N:{},future:{},qx:{},qy:{},q_yaw:{},q_vel:{},r_acc:{},r_steer:{},u_steer:{},u_acc:{}\n\n\n'.format(N,future_time,qx,qy,q_yaw,q_vel,r_acc,r_steer,u_steer,u_acc))
         csv_f.write('time,x_ref,x_pos,y_ref,y_pos,speed,acc,phi,x_err,y_err,x_dot_err,y_dot_err\n')
         for i in range(len(time_l)):
             t = time_l[i]
@@ -322,7 +322,7 @@ def write_small_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_
 
     # print(folder)
     with open(folder+'/{}_{}_trial_{}.csv'.format(track_name,time,trial),'w+') as csv_f:
-        csv_f.write('N:{},future:{},qx:{},qy:{},q_yaw:{},q_vel:{},r_acc:{},r_steer:{},u_steer:{},u_acc:{}\n\n\n'.format(N,future_time,qx,qy,q_yaw,q_vel,r_acc,r_steer,u_steer,u_acc))
+        # csv_f.write('N:{},future:{},qx:{},qy:{},q_yaw:{},q_vel:{},r_acc:{},r_steer:{},u_steer:{},u_acc:{}\n\n\n'.format(N,future_time,qx,qy,q_yaw,q_vel,r_acc,r_steer,u_steer,u_acc))
         csv_f.write('time,x_pos,y_pos\n')
         for i in range(len(time_l)):
             t = time_l[i]
@@ -452,4 +452,5 @@ if __name__ == "__main__":
             break
         
 
+    # write_small_csv(time_l,x_ref_pos,x_pos,y_ref_pos,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,vehicle_pose_msg.odom)
     write_full_csv(time_l,x_ref_pos,x_pos,y_ref_pos,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,vehicle_pose_msg.odom)

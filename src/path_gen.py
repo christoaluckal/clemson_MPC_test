@@ -6,8 +6,8 @@ def get_spline_path(csv_f,time):
     path = csv_f
 
     waypoints = np.genfromtxt(path, dtype=float, delimiter=",")
-    xCoords = waypoints[1:,1]
-    yCoords = waypoints[1:,0]
+    xCoords = waypoints[1:,0]
+    yCoords = waypoints[1:,1]
 
     correction_angle = -math.atan2(yCoords[1]-yCoords[0],xCoords[1]- xCoords[0])
     R_z = np.array(
