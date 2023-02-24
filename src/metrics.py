@@ -16,7 +16,7 @@ s= []
 a = []
 xe = []
 ye = []
-for i in csv_f.readlines()[5:]:
+for i in csv_f.readlines()[1:]:
     vals = i.split(',')
     z.append(0)
     t.append(float(vals[0]))

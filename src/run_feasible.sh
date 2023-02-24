@@ -1,5 +1,5 @@
 
-string="imso"
+string="o"
 for (( track=0; track<${#string}; track++)); do
     curr_track=${string:$track:1}
     echo $curr_track
@@ -38,7 +38,7 @@ for (( track=0; track<${#string}; track++)); do
         do
             for j in 8 10 12
             do
-                python3 feasible_mpc.py o 4 1.5 2 2 2 0.01 0.1 0.1 0 0 1 $i $j
+                python3 feasible_mpc.py o 4 1.5 2 2 2 0.01 0.1 0.1 0 0 $i $j
             done
         done
     fi
