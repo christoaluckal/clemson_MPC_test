@@ -25,8 +25,8 @@ import sys
 import matplotlib.pyplot as plt
 from std_srvs.srv import SetBool
 
-N = 5 # Number of steps in the interval
-future_time = 1 # Future Look Ahead time
+N = int(sys.argv[2]) # Number of steps in the interval
+future_time = float(sys.argv[3]) # Future Look Ahead time
 
 # Define necessary vehicle parameters
 WB = 0.324 # Wheelbase of the vehicle
@@ -58,16 +58,16 @@ elif track == 'o':
     track_length = 259.65211118046517
 
 
-qx = float(sys.argv[2]) # State error scale for x_pos
-qy = float(sys.argv[3]) # State error scale for y_pos
-q_yaw = float(sys.argv[4]) # State error scale for yaw
-q_vel = float(sys.argv[5]) # State error scale for velocity
-r_acc = float(sys.argv[6]) # Input cost of accln
-r_steer = float(sys.argv[7]) # Input cost of steer
-u_steer = float(sys.argv[9]) # Steering constraints
-u_acc = float(sys.argv[8]) # Accln constraints
-trial = int(sys.argv[10])
-vmax = sys.argv[11]
+qx = float(sys.argv[4]) # State error scale for x_pos
+qy = float(sys.argv[5]) # State error scale for y_pos
+q_yaw = float(sys.argv[6]) # State error scale for yaw
+q_vel = float(sys.argv[7]) # State error scale for velocity
+r_acc = float(sys.argv[8]) # Input cost of accln
+r_steer = float(sys.argv[9]) # Input cost of steer
+u_steer = float(sys.argv[10]) # Steering constraints
+u_acc = float(sys.argv[11]) # Accln constraints
+trial = int(sys.argv[12])
+vmax = sys.argv[13]
 
 print("N:",N)
 print("ft:",future_time)
@@ -263,7 +263,7 @@ def write_full_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_d
     # plt.show()
     # plt.savefig(folder+'/trial_{}.png'.format(trial))
 
-    # print(folder)
+    print(folder+'/{}_{}_trial_{}.csv'.format(track_name,vmax,trial))
     with open(folder+'/{}_{}_trial_{}.csv'.format(track_name,vmax,trial),'w+') as csv_f:
         # csv_f.write('N:{},future:{},qx:{},qy:{},q_yaw:{},q_vel:{},r_acc:{},r_steer:{},u_steer:{},u_acc:{}\n\n\n'.format(N,future_time,qx,qy,q_yaw,q_vel,r_acc,r_steer,u_steer,u_acc))
         csv_f.write('time,x_ref,x_pos,y_ref,y_pos,speed,acc,phi,x_err,y_err,x_dot_err,y_dot_err\n')
@@ -346,7 +346,7 @@ if __name__ == "__main__":
     reset = rospy.ServiceProxy("/reset_car", SetBool)
     try:
         reset_status = reset(True)
-        rospy.sleep(1.2)
+        rospy.sleep(2)
     except rospy.ServiceException as e:
         rospy.signal_shutdown("Could not reset world")
     
