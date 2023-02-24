@@ -44,18 +44,18 @@ if track == 'i':
     track_name = 'IMS'
     track_file = 'track_csvs/IMS_centerline_reference_Optimal.csv'
     track_length = 292.3692423257752
-# elif track == 'm':
-#     track_name = 'Monza'
-#     track_file = 'track_csvs/Monza_centerline.csv'
-#     track_length = 444.9285006996924
-# elif track == 's':
-#     track_name = 'Silverstone'
-#     track_file = 'track_csvs/Silverstone_centerline.csv'
-#     track_length = 457.1467131573973
-# elif track == 'o':
-#     track_name = 'Oschersleben'
-#     track_file = 'track_csvs/Oschersleben_centerline.csv'
-#     track_length = 259.65211118046517
+elif track == 'm':
+    track_name = 'Monza'
+    track_file = 'track_csvs/Monza_centerline_reference_Optimal.csv'
+    track_length = 444.9285006996924
+elif track == 's':
+    track_name = 'Silverstone'
+    track_file = 'track_csvs/Silverstone_centerline_reference_Optimal.csv'
+    track_length = 457.1467131573973
+elif track == 'o':
+    track_name = 'Oschersleben'
+    track_file = 'track_csvs/Oschersleben_centerline_reference_Optimal.csv'
+    track_length = 259.65211118046517
 
 
 qx = float(sys.argv[2]) # State error scale for x_pos
@@ -67,6 +67,7 @@ r_steer = float(sys.argv[7]) # Input cost of steer
 u_steer = float(sys.argv[9]) # Steering constraints
 u_acc = float(sys.argv[8]) # Accln constraints
 trial = int(sys.argv[10])
+vmax = sys.argv[11]
 
 print("N:",N)
 print("ft:",future_time)
@@ -232,7 +233,7 @@ def reference_pose_selection(x_spline,y_spline, curr_t,N):
 def write_full_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_dot_err,y_dot_err,odoms):
     
     # trial_num = 1
-    folder = 'trials/feasible'+track_name+'/vmax5'
+    folder = 'trials/feasible'+track_name+"/"+vmax
     import os
     try: 
         os.mkdir(folder) 
@@ -263,7 +264,7 @@ def write_full_csv(time_l,x_ref,x_pos,y_ref,y_pos,speeds,acc,phi,x_err,y_err,x_d
     # plt.savefig(folder+'/trial_{}.png'.format(trial))
 
     # print(folder)
-    with open(folder+'/{}_{}_trial_{}.csv'.format(track_name,5,trial),'w+') as csv_f:
+    with open(folder+'/{}_{}_trial_{}.csv'.format(track_name,vmax,trial),'w+') as csv_f:
         # csv_f.write('N:{},future:{},qx:{},qy:{},q_yaw:{},q_vel:{},r_acc:{},r_steer:{},u_steer:{},u_acc:{}\n\n\n'.format(N,future_time,qx,qy,q_yaw,q_vel,r_acc,r_steer,u_steer,u_acc))
         csv_f.write('time,x_ref,x_pos,y_ref,y_pos,speed,acc,phi,x_err,y_err,x_dot_err,y_dot_err\n')
         for i in range(len(time_l)):
@@ -355,7 +356,7 @@ if __name__ == "__main__":
 
     csv_f = track_file
     time = 0
-    global_path,x_spline,y_spline,time = path_gen.get_spline_path(csv_f,0)
+    global_path,x_spline,y_spline,time = path_gen.get_spline_path(csv_f,vmax)
 
     rate = rospy.Rate(100)
     vehicle_pose_msg = ros_message_listener()
